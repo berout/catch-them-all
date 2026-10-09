@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Łap! – gra sterowana dłonią</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -124,6 +124,56 @@ canvas.full{position:absolute;inset:0;width:100%;height:100%;display:block}
   background:radial-gradient(circle,#fff 0 4px,rgba(255,255,255,.22) 5px 15px,transparent 16px),conic-gradient(var(--mint) calc(var(--p,0) * 1turn),rgba(255,255,255,.35) 0);
   -webkit-mask:radial-gradient(circle,#000 0 16px,transparent 17px 21px,#000 22px 26px,transparent 27px);mask:radial-gradient(circle,#000 0 16px,transparent 17px 21px,#000 22px 26px,transparent 27px);
   filter:drop-shadow(0 0 8px rgba(0,0,0,.5))}
+
+/* ---------- instrukcja zwijana ---------- */
+body:not(.hint-open) #hint{display:none}
+body.hint-open .hint-btn{display:none}
+#hint{padding-right:48px}
+.hint-x{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--fg);font:500 18px/1 var(--ui);cursor:pointer;display:grid;place-items:center}
+.hint-btn{position:fixed;left:16px;bottom:16px;z-index:26;height:40px;padding:0 16px 0 12px;border-radius:999px;border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:var(--fg);font:600 13px var(--ui);display:flex;align-items:center;gap:8px;cursor:pointer}
+.hint-btn b{width:22px;height:22px;border-radius:50%;background:var(--fg);color:#121216;display:grid;place-items:center;font:800 13px var(--ui)}
+
+/* ---------- telefon ---------- */
+@media (max-width:760px), (max-height:520px) and (pointer:coarse){
+  html,body{height:100%;overscroll-behavior:none}
+  #topbar{display:none}
+  .ct-hud{top:calc(env(safe-area-inset-top) + 8px);left:8px;right:8px;transform:none;gap:6px;justify-content:center}
+  .ct-hud>div{flex:1 1 0;min-width:0;max-width:120px;padding:6px 4px 7px;border-radius:12px}
+  .ct-hud small{font-size:8.5px;letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ct-hud b{font-size:20px}
+  .ct-lives{height:24px;gap:2px}
+  .ct-lives i{width:12px;height:12px}
+  .ct-prog{margin-top:4px}
+  .ct-msg{top:26%;width:92vw}
+  .ct-title{font-size:clamp(40px,13vw,76px)}
+  .ct-sub{font-size:14px;margin-top:10px}
+  .ct-diff{top:64%;width:calc(100vw - 16px);gap:8px;justify-content:center}
+  .ct-dbtn{flex:1 1 0;min-width:0;width:auto;max-width:180px;padding:14px 6px 18px;border-radius:18px;gap:4px}
+  .ct-dbtn b{font-size:clamp(17px,5.4vw,24px)}
+  .ct-dbtn span{font-size:11px}
+  .ct-dbtn small{display:none}
+  .ct-hold{font-size:11px;min-height:14px}
+  .ct-dbtn .ring{left:10px;right:10px;bottom:8px}
+  .uk-sens{top:calc(64% + 74px);max-width:calc(100vw - 16px);gap:2px;padding:4px}
+  .uk-sens span{font-size:9.5px;padding:0 6px;letter-spacing:.06em}
+  .uk-sens button{font-size:12px;padding:6px 10px}
+  #preview{width:84px;height:112px;right:10px;bottom:calc(env(safe-area-inset-bottom) + 10px);border-radius:12px}
+  #hint{z-index:27;left:10px;right:10px;transform:none;max-width:none;min-width:0;bottom:calc(env(safe-area-inset-bottom) + 10px);max-height:45vh;overflow:auto;font-size:13px;align-items:flex-start;flex-direction:column;gap:8px}
+  .hint-btn{left:10px;bottom:calc(env(safe-area-inset-bottom) + 10px)}
+  #start{place-items:start center;padding:calc(env(safe-area-inset-top) + 28px) 18px 28px}
+  .start-card h1{font-size:clamp(52px,17vw,96px)}
+  .lead{font-size:16px;margin-bottom:20px}
+  .start-list{grid-template-columns:1fr;gap:8px;margin-bottom:24px}
+  .cta{width:100%;justify-content:center}
+}
+@media (max-height:520px) and (pointer:coarse){ /* telefon poziomo */
+  .ct-msg{top:34%}
+  .ct-title{font-size:clamp(36px,9vh,60px)}
+  .ct-diff{top:66%}
+  .ct-dbtn{padding:10px 6px 14px;max-width:150px}
+  .uk-sens{top:calc(66% + 70px)}
+  #preview{width:100px;height:75px}
+}
 </style>
 </head>
 <body>
@@ -141,7 +191,8 @@ canvas.full{position:absolute;inset:0;width:100%;height:100%;display:block}
 
 <main id="stage"></main>
 
-<div id="hint"><span class="hint-text"></span><span class="hint-extra"></span></div>
+<div id="hint"><span class="hint-text"></span><span class="hint-extra"></span><button class="hint-x" aria-label="Zamknij instrukcję">×</button></div>
+<button class="hint-btn" id="hintToggle" aria-label="Jak grać"><b>?</b>Jak grać</button>
 <div id="preview"><canvas id="pv"></canvas></div>
 
 <section id="start">
@@ -210,6 +261,13 @@ class OneEuro2D {
   constructor(...a) { this.fx = new OneEuro(...a); this.fy = new OneEuro(...a); }
   filter(p, t) { return { x: this.fx.filter(p.x, t), y: this.fy.filter(p.y, t) }; }
   reset() { this.fx.reset(); this.fy.reset(); }
+}
+
+if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    r = Math.min(typeof r === 'number' ? r : 0, w / 2, h / 2);
+    this.moveTo(x + r, y); this.arcTo(x + w, y, x + w, y + h, r); this.arcTo(x + w, y + h, x, y + h, r); this.arcTo(x, y + h, x, y, r); this.arcTo(x, y, x + w, y, r); this.closePath();
+  };
 }
 
 // ---------- app state ----------
@@ -369,8 +427,8 @@ const POSE_CONN = [[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,2
 const pvCtx = ui.pv.getContext('2d');
 function drawPreview(sc, data) {
   if (!app.showPreview) return;
-  const c = ui.pv, pw = 208, ph = 156, d = app.dpr;
-  if (c.width !== pw * d) { c.width = pw * d; c.height = ph * d; }
+  const c = ui.pv, pw = ui.preview.clientWidth || 208, ph = ui.preview.clientHeight || 156, d = app.dpr;
+  if (c.width !== Math.round(pw * d) || c.height !== Math.round(ph * d)) { c.width = Math.round(pw * d); c.height = Math.round(ph * d); }
   const ctx = pvCtx; ctx.setTransform(d, 0, 0, d, 0, 0);
   ctx.fillStyle = '#111'; ctx.fillRect(0, 0, pw, ph);
   drawVideoCover(ctx, pw, ph);
@@ -403,7 +461,7 @@ async function startCamera() {
     beep(880, 0.08, 'sine', 0.05);
     $('#start').classList.add('gone');
     const sc = app.scenes[app.current];
-    loadModel(sc.needs).catch(() => {}).finally(() => loadModel('hands').catch(() => {}));
+    loadModel(sc.needs).catch(() => {}).finally(() => { if (app.scenes.some((x) => x.needs === 'hands')) loadModel('hands').catch(() => {}); });
   } catch (e) {
     console.error(e); err.hidden = false;
     err.textContent = e.name === 'NotAllowedError' ? 'Brak zgody na kamerę. Kliknij ikonę kamery w pasku adresu, zezwól na dostęp i odśwież stronę.'
@@ -419,6 +477,7 @@ function loop(now) {
   requestAnimationFrame(loop);
   const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
   const sc = app.scenes[app.current];
+  const vv = app.video; if (app.camReady && vv.videoWidth && (vv.videoWidth !== app.vw || vv.videoHeight !== app.vh)) { app.vw = vv.videoWidth; app.vh = vv.videoHeight; }
   let data = null;
   if (app.fake) {
     data = app.fake(sc.id, now) || null;
@@ -435,7 +494,20 @@ function loop(now) {
   if (app.fpsOn) { fpsAcc += dt; fpsN++; if (fpsAcc > 0.5) { ui.fps.textContent = `${Math.round(fpsN / fpsAcc)} fps · detekcja ${Math.round(detN / fpsAcc)}/s`; fpsAcc = 0; fpsN = 0; detN = 0; } } else detN = 0;
 }
 
+// instrukcja: na telefonie zwinięta do przycisku „?”, na komputerze rozwinięta
+const MOBILE_Q = '(max-width: 760px), (max-height: 520px) and (pointer: coarse)';
+app.mobile = matchMedia(MOBILE_Q).matches;
+app.setHintOpen = (on) => { document.body.classList.toggle('hint-open', !!on); };
+function initHintToggle() {
+  const btn = $('#hintToggle'), x = $('#hint .hint-x');
+  if (!btn) { document.body.classList.add('hint-open'); return; }
+  app.setHintOpen(!app.mobile);
+  btn.onclick = () => app.setHintOpen(true);
+  if (x) x.onclick = () => app.setHintOpen(false);
+}
+
 function boot() {
+  initHintToggle();
   app.scenes.forEach((sc, i) => {
     const t = el('button', 'tab', `<span class="k">${i + 1}</span>${sc.name}`);
     t.onclick = () => setScene(i); ui.tabs.appendChild(t);
@@ -446,7 +518,7 @@ function boot() {
   $('#startBtn').onclick = startCamera;
   $('#pvBtn').onclick = () => togglePreview();
   addEventListener('resize', () => {
-    app.W = innerWidth; app.H = innerHeight; app.dpr = Math.min(devicePixelRatio || 1, 2);
+    app.W = innerWidth; app.H = innerHeight; app.dpr = Math.min(devicePixelRatio || 1, 2); app.mobile = matchMedia(MOBILE_Q).matches;
     app.resizeHooks.forEach((f) => f());
   });
   addEventListener('keydown', (e) => {
@@ -535,7 +607,7 @@ registerScene({
 
   countdown(diff) {
     const D = this.DIFF[diff]; this.diff = diff; this.sel = Object.keys(this.DIFF).indexOf(diff);
-    this.state = 'count'; this.tc = 0; this.step = -1; this.showDiff(false); this.clearDwell();
+    this.state = 'count'; this.tc = 0; this.step = -1; this.showDiff(false); this.clearDwell(); if (app.mobile && app.setHintOpen) app.setHintOpen(false);
     this.objs = []; this.score = 0; this.combo = 0; this.level = D.start; this.lives = D.lives; this.maxLives = D.lives; this.lvCaught = 0; this.caught = 0;
     this.spawnT = 0.6; this.renderLives(true);
   },
